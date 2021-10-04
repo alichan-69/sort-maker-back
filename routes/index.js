@@ -5,6 +5,6 @@ const router = express.Router()
 const registerSort = require('./register-sort.js')
 
 // ルーティング処理
-router.use('/', registerSort)
+router.use('/register-sort', registerSort)
 
 module.exports = router
