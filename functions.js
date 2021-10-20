@@ -11,6 +11,7 @@ exports.configureMysql = async () => {
             password: '',
             database: 'sort_maker',
         })
+
         return con
     } catch (e) {
         return false
@@ -53,16 +54,17 @@ exports.isStrOutOfRange = (value, min, max) => {
 // ユーザー認証
 // ======================
 exports.authenticateUser = async (userId) => {
-    // データベースに接続してユーザーidを取得し、そのユーザーidが受け取ったidと同値だったらtrueを返し、それ以外はfalseを返す
+    // データベースに接続
     const connection = await this.configureMysql()
 
     if (!connection) return false
 
     try {
-        const sql = `SELECT * FROM users WHERE user_id = ${userId}`
+        // ユーザーidを取得し、そのユーザーidがポストされたidと同値だったらtrueを返し、それ以外はfalseを返す
+        const sql = `SELECT * FROM users WHERE id = '${userId}'`
         const [rows] = await connection.query(sql)
 
-        if (userId === rows[0]['user_id']) {
+        if (userId === rows[0]['id']) {
             return true
         } else {
             return false
@@ -72,4 +74,18 @@ exports.authenticateUser = async (userId) => {
     } finally {
         connection.end()
     }
+}
+
+// ======================
+// 日付のフォーマット処理
+// ======================
+exports.formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = ('0' + date.getMonth()).slice(-2)
+    const day = ('0' + date.getDay()).slice(-2)
+    const hour = ('0' + date.getHours()).slice(-2)
+    const minute = ('0' + date.getMinutes()).slice(-2)
+    const second = ('0' + date.getSeconds()).slice(-2)
+
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
