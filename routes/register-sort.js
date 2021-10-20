@@ -4,8 +4,9 @@ const func = require('../functions')
 const router = express.Router()
 
 router.post('/', async (req, res) => {
-    const a = await func.authenticateUser('1')
-    console.log(a)
+    // ユーザー認証を実行
+    const result = await func.authenticateUser('1')
+    res.send(result)
 })
 
 module.exports = router
