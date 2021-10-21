@@ -7,7 +7,7 @@ router.post('/', async (req, res) => {
     const postData = req.body
 
     // ポストされたデータの必須キーの存在チェック
-    const requiredKeys = ['user_id', 'name', 'description', 'itemName']
+    const requiredKeys = ['user_id', 'name', 'description', 'itemNames']
     if (!func.isExistKey(requiredKeys, postData))
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
 
@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
     const userId = postData['user_id']
     const name = postData['name']
     const description = postData['description']
-    const itemName = postData['itemName']
+    const itemNames = postData['itemNames']
 
     // その他データベースに登録する値を変数に格納
     const deleteFlg = false
@@ -33,12 +33,12 @@ router.post('/', async (req, res) => {
         res.send(
             func.apiResponse(1, 0, 'ソートタイトルの説明の文字数が範囲外です')
         )
-    if (!func.isStrOutOfRange(itemName, 1, 255))
+    if (!func.isStrOutOfRange(itemNames, 1, 255))
         res.send(
             func.apiResponse(1, 0, 'ソートアイテムの名前の文字数が範囲外です')
         )
 
-    if (itemName.length < 1 || itemName.length > 100)
+    if (itemNames.length < 1 || itemNames.length > 100)
         res.send(func.apiResponse(1, 0, 'ソートアイテムの数が範囲外です'))
 
     // ユーザー認証を実行
@@ -62,8 +62,8 @@ router.post('/', async (req, res) => {
         // ソートアイテムの登録
         let sortItemIds = []
 
-        for (let i in itemName) {
-            let sql = `INSERT INTO sort_items (name,image,sort_id,delete_flg,create_date,update_date) values ('${itemName[i]}','','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
+        for (let i in itemNames) {
+            let sql = `INSERT INTO sort_items (name,image,sort_id,delete_flg,create_date,update_date) values ('${itemNames[i]}','','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
             const [rows] = await connection.query(sql)
             sortItemIds.push(rows.insertId)
         }
