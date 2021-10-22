@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     if (!func.isStrOutOfRange(userId, 1, 128))
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
 
-    if (!func.isStrOutOfRange(image, 1, 2083))
+    if (!func.isStrOutOfRange(image, 0, 2083)) {
         res.send(
             func.apiResponse(
                 1,
@@ -36,9 +36,10 @@ router.post('/', async (req, res) => {
                 'ソートタイトルの画像のURLの文字数が範囲外です'
             )
         )
+    }
 
     for (let i in itemImages) {
-        if (!func.isStrOutOfRange(itemImages[i], 1, 2083))
+        if (!func.isStrOutOfRange(itemImages[i], 0, 2083))
             res.send(
                 func.apiResponse(
                     1,
