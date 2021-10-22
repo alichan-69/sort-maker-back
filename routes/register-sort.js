@@ -33,13 +33,20 @@ router.post('/', async (req, res) => {
         res.send(
             func.apiResponse(1, 0, 'ソートタイトルの説明の文字数が範囲外です')
         )
-    if (!func.isStrOutOfRange(itemNames, 1, 255))
-        res.send(
-            func.apiResponse(1, 0, 'ソートアイテムの名前の文字数が範囲外です')
-        )
+
+    for (let i in itemNames) {
+        if (!func.isStrOutOfRange(itemNames[i], 1, 255))
+            res.send(
+                func.apiResponse(
+                    1,
+                    0,
+                    'ソートアイテムの名前の文字数が範囲外です'
+                )
+            )
+    }
 
     if (itemNames.length < 1 || itemNames.length > 100)
-        res.send(func.apiResponse(1, 0, 'ソートアイテムの数が範囲外です'))
+        res.send(func.apiResponse(1, 0, 'ソートアイテムの名前の数が範囲外です'))
 
     // ユーザー認証を実行
     if (!(await func.authenticateUser(userId))) {
