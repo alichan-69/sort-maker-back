@@ -1,0 +1,57 @@
+const express = require('express')
+const func = require('../functions')
+
+const router = express.Router()
+
+router.post('/', async (req, res) => {
+    const postData = req.body
+
+    // ポストされたデータの必須キーの存在チェック
+    const requiredKeys = ['id']
+    if (!func.isExistKey(requiredKeys, postData))
+        res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+
+    // ポストされたデータをそれぞれ変数に格納
+    const id = postData['id']
+
+    // その他データベースに登録する値を変数に格納
+    const deleteFlg = false
+    const createDate = func.formatDate(new Date())
+    const updateDate = func.formatDate(new Date())
+
+    // バリデーション
+    if (!func.isStrOutOfRange(id, 1, 128))
+        res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
+
+    // データベースに接続
+    const connection = await func.configureMysql()
+
+    if (!connection)
+        res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+
+    // ユーザーを登録する
+    try {
+        // すでにユーザーが登録されているかどうか確かめる
+        let sql = `SELECT COUNT(*) AS count FROM users WHERE id = '${id}' AND delete_flg = false`
+        const [rows] = await connection.query(sql)
+        if (rows[0]['count']) {
+            // すでに登録されていたら正常なレスポンスをを返す
+            res.send(func.apiResponse(0, 0, '成功'))
+            return
+        }
+
+        // ユーザーの登録
+        sql = `INSERT INTO users (id,delete_flg,create_date,update_date) values ('${id}',${deleteFlg},'${createDate}','${updateDate}')`
+        await connection.query(sql)
+
+        // 登録できたら正常なレスポンスをを返す
+        res.send(func.apiResponse(0, 0, '成功'))
+    } catch (e) {
+        // エラーがひっかかったらエラーレスポンスを返す
+        res.send(func.apiResponse(1, 0, 'ユーザー登録できませんでした'))
+    } finally {
+        connection.end()
+    }
+})
+
+module.exports = router
