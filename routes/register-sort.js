@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
         // ソートタイトルの登録
         const sql = `INSERT INTO sorts (name,description,image,user_id,delete_flg,create_date,update_date) values ('${name}','${description}','','${userId}',${deleteFlg},'${createDate}','${updateDate}')`
         const [rows] = await connection.query(sql)
-        const sortId = rows.insertId
+        const sortId = rows['insertId']
 
         // ソートアイテムの登録
         let sortItemIds = []
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
         for (let i in itemNames) {
             let sql = `INSERT INTO sort_items (name,image,sort_id,delete_flg,create_date,update_date) values ('${itemNames[i]}','','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
             const [rows] = await connection.query(sql)
-            sortItemIds.push(rows.insertId)
+            sortItemIds.push(rows['insertId'])
         }
 
         // 登録できたらdataに登録したソートタイトルとソートアイテムのidを記載した正常なレスポンスをを返す
