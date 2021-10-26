@@ -52,7 +52,6 @@ router.post('/', async (req, res) => {
             )
         )
     } catch (e) {
-        console.log(e.message)
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソートを検索できませんでした'))
     } finally {

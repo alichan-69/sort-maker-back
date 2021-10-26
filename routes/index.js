@@ -8,6 +8,8 @@ const registerLike = require('./register-like')
 const registerSort = require('./register-sort')
 const registerUser = require('./register-user')
 const registerSortImage = require('./register-sort-image')
+const searchLike = require('./search-like')
+const searchSortItems = require('./search-sort-items')
 const searchSort = require('./search-sort')
 
 // ルーティング処理
@@ -17,6 +19,8 @@ router.use('/register-like', registerLike)
 router.use('/register-sort', registerSort)
 router.use('/register-user', registerUser)
 router.use('/register-sort-image', registerSortImage)
+router.use('/search-like', searchLike)
+router.use('/search-sort-items', searchSortItems)
 router.use('/search-sort', searchSort)
 
 module.exports = router

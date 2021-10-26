@@ -44,7 +44,6 @@ router.post('/', async (req, res) => {
         // 登録できたら正常なレスポンスをを返す
         res.send(func.apiResponse(0, 0, '成功'))
     } catch (e) {
-        console.log(e.message)
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'お気に入り削除できませんでした'))
     } finally {
