@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
     const sortItemIds = postData['sort_item_ids']
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 128))
+    if (!func.isStrOutOfRange(userId, 1, 255))
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
 
     if (!func.isStrOutOfRange(image, 0, 2083)) {

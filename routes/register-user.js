@@ -7,12 +7,13 @@ router.post('/', async (req, res) => {
     const postData = req.body
 
     // ポストされたデータの必須キーの存在チェック
-    const requiredKeys = ['id']
+    const requiredKeys = ['id', 'name']
     if (!func.isExistKey(requiredKeys, postData))
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
 
     // ポストされたデータをそれぞれ変数に格納
     const id = postData['id']
+    const name = postData['name']
 
     // その他データベースに登録する値を変数に格納
     const deleteFlg = false
@@ -20,8 +21,10 @@ router.post('/', async (req, res) => {
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
-    if (!func.isStrOutOfRange(id, 1, 128))
+    if (!func.isStrOutOfRange(id, 1, 255))
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
+    if (!func.isStrOutOfRange(name, 1, 255))
+        res.send(func.apiResponse(1, 0, '名前の文字数が範囲外です'))
 
     // データベースに接続
     const connection = await func.configureMysql()
@@ -41,7 +44,7 @@ router.post('/', async (req, res) => {
         }
 
         // ユーザーの登録
-        sql = `INSERT INTO users (id,delete_flg,create_date,update_date) values ('${id}',${deleteFlg},'${createDate}','${updateDate}')`
+        sql = `INSERT INTO users (id,name,delete_flg,create_date,update_date) values ('${id}','${name}',${deleteFlg},'${createDate}','${updateDate}')`
         await connection.query(sql)
 
         // 登録できたら正常なレスポンスをを返す

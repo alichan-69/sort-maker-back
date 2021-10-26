@@ -27,8 +27,12 @@ router.post('/', async (req, res) => {
     // ソートを検索する
     try {
         // ソートの検索
-        const sql = `SELECT id, name, description, image, user_id, create_date, update_date FROM sorts WHERE id = ${id} AND delete_flg = false`
+        let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts WHERE id = ${id} AND delete_flg = false`
         const [rows] = await connection.query(sql)
+
+        // ユーザー名を取ってくる
+        sql = `SELECT name FROM users WHERE id = '${rows[0]['user_id']}' AND delete_flg = false`
+        const [rowsOfUsers] = await connection.query(sql)
 
         // 検索できたらdataに検索したデータを記載した正常なレスポンスをを返す
         res.send(
@@ -39,6 +43,8 @@ router.post('/', async (req, res) => {
                     name: rows[0]['name'],
                     description: rows[0]['description'],
                     image: rows[0]['image'],
+                    play_count: rows[0]['play_count'],
+                    user_name: rowsOfUsers[0]['name'],
                     create_date: rows[0]['create_date'],
                     update_date: rows[0]['update_date'],
                 },

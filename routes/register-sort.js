@@ -18,12 +18,13 @@ router.post('/', async (req, res) => {
     const itemNames = postData['itemNames']
 
     // その他データベースに登録する値を変数に格納
+    const playCount = 0
     const deleteFlg = false
     const createDate = func.formatDate(new Date())
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 128))
+    if (!func.isStrOutOfRange(userId, 1, 255))
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
     if (!func.isStrOutOfRange(name, 1, 255))
         res.send(
@@ -62,7 +63,7 @@ router.post('/', async (req, res) => {
     // ソートタイトルとソートアイテムを登録する
     try {
         // ソートタイトルの登録
-        const sql = `INSERT INTO sorts (name,description,image,user_id,delete_flg,create_date,update_date) values ('${name}','${description}','','${userId}',${deleteFlg},'${createDate}','${updateDate}')`
+        const sql = `INSERT INTO sorts (name,description,play_count,user_id,delete_flg,create_date,update_date) values ('${name}','${description}',${playCount},'${userId}',${deleteFlg},'${createDate}','${updateDate}')`
         const [rows] = await connection.query(sql)
         const sortId = rows['insertId']
 
@@ -70,7 +71,7 @@ router.post('/', async (req, res) => {
         let sortItemIds = []
 
         for (let i in itemNames) {
-            let sql = `INSERT INTO sort_items (name,image,sort_id,delete_flg,create_date,update_date) values ('${itemNames[i]}','','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
+            let sql = `INSERT INTO sort_items (name,sort_id,delete_flg,create_date,update_date) values ('${itemNames[i]}','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
             const [rows] = await connection.query(sql)
             sortItemIds.push(rows['insertId'])
         }
