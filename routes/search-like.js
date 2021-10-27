@@ -15,9 +15,6 @@ router.post('/', async (req, res) => {
     const userId = postData['user_id']
     const sortId = postData['sort_id']
 
-    // その他の値を変数に格納
-    // const deleteFlg = true
-
     // バリデーション
     if (!func.isStrOutOfRange(userId, 1, 255))
         res.send(func.apiResponse(1, 0, 'ユーザーidの文字数が範囲外です'))
@@ -42,7 +39,7 @@ router.post('/', async (req, res) => {
         const [rows] = await connection.query(sql)
 
         // お気に入りが存在しなかったらdataにdelete_flgのみを記載した正常なレスポンスをを返す
-        if (!rows.length)
+        if (!rows.length) {
             res.send(
                 func.apiResponse(
                     0,
@@ -52,6 +49,8 @@ router.post('/', async (req, res) => {
                     '成功'
                 )
             )
+            return
+        }
 
         // ユーザー名を取ってくる
         sql = `SELECT name FROM users WHERE id = '${rows[0]['user_id']}' AND delete_flg = false`
@@ -73,7 +72,6 @@ router.post('/', async (req, res) => {
             )
         )
     } catch (e) {
-        console.log(e.message)
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'お気に入りを検索できませんでした'))
     } finally {
