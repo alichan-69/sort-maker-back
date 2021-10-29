@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise')
+const twitter = require('twitter')
 
 // ======================
 // データベースの初期設定
@@ -88,4 +89,16 @@ exports.formatDate = (date) => {
     const second = ('0' + date.getSeconds()).slice(-2)
 
     return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
+// ======================
+// ツイッターの初期設定
+// ======================
+exports.initializeTwitter = (accessTokenKey, accessTokenSecret) => {
+    return new twitter({
+        consumer_key: 'RVG2XXhNAMMjtfiZFup0NKtjY',
+        consumer_secret: 'wNu836aH7W7icKwImyp0u3NwY2OkiqimNvLnOqr2RcidGFSI3F',
+        access_token_key: accessTokenKey,
+        access_token_secret: accessTokenSecret,
+    })
 }
