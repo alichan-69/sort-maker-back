@@ -64,7 +64,6 @@ router.post('/', async function (req, res) {
 
     // ツイッターの初期設定
     const client = func.initializeTwitter(decryptedAccessToken, decryptedSecret)
-    console.log(client)
 
     // 初期設定に失敗したらエラーレスポンスを返す
     if (!client)
