@@ -6,22 +6,22 @@ const router = express.Router()
 router.post('/', async (req, res) => {
     const postData = req.body
 
-    // ポストされたデータの必須キーの存在チェック
-    const requiredKeys = [
-        'part_of_sort_name',
-        'is_sort_by_popularity',
-        'is_sort_by_time',
-    ]
-    if (!func.isExistKey(requiredKeys, postData))
-        res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
-
     // ポストされたデータをそれぞれ変数に格納
-    const partOfSortName = postData['part_of_sort_name']
-    const isSortByPopularity = postData['is_sort_by_popularity']
-    const isSortByTime = postData['is_sort_by_time']
+    const partOfSortName =
+        'part_of_sort_name' in postData ? postData['part_of_sort_name'] : null
+    const isSortByPopularity =
+        'is_sort_by_popularity' in postData
+            ? postData['is_sort_by_popularity']
+            : false
+    const isSortByTime =
+        'is_sort_by_time' in postData ? postData['is_sort_by_time'] : false
+    const userId = 'userId' in postData ? postData['userId'] : ''
 
     // バリデーション
-    if (!func.isStrOutOfRange(partOfSortName, 0, 255))
+    if (
+        partOfSortName !== null &&
+        !func.isStrOutOfRange(partOfSortName, 0, 255)
+    )
         res.send(func.apiResponse(1, 0, 'ソートの名前の文字数が範囲外です'))
 
     // データベースに接続
@@ -33,8 +33,17 @@ router.post('/', async (req, res) => {
     // ソートを検索する
     try {
         // ソートの検索
-        let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts WHERE name LIKE '%${partOfSortName}%'`
+        let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts`
 
+        if (partOfSortName !== null && userId) {
+            sql += ` WHERE name LIKE '%${partOfSortName}%' AND user_id = '${userId}'  AND delete_flg = false`
+        } else if (partOfSortName !== null) {
+            sql += ` WHERE name LIKE '%${partOfSortName}%'  AND delete_flg = false`
+        } else if (userId) {
+            sql += ` WHERE user_id = '${userId}'  AND delete_flg = false`
+        } else {
+            sql += ' WHERE delete_flg = false'
+        }
         if (isSortByPopularity) sql += ' ORDER BY play_count DESC'
         if (isSortByTime) sql += ' ORDER BY create_date DESC'
 
@@ -46,8 +55,8 @@ router.post('/', async (req, res) => {
 
             const [rowsOfUsers] = await connection.query(sql)
 
-            delete rows[i].user_id
-            rows[i].user_name = rowsOfUsers[0]['name']
+            delete rows[i]['user_id']
+            rows[i]['user_name'] = rowsOfUsers[0]['name']
         }
 
         // 検索できたらdataに検索したデータを記載した正常なレスポンスをを返す
@@ -61,7 +70,6 @@ router.post('/', async (req, res) => {
             )
         )
     } catch (e) {
-        console.log(e.message)
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソートを検索できませんでした'))
     } finally {
