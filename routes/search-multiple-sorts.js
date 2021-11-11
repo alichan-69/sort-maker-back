@@ -35,8 +35,8 @@ router.post('/', async (req, res) => {
         // ソートの検索
         let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts WHERE name LIKE '%${partOfSortName}%'`
 
-        if (isSortByPopularity) sql += ' ORDER BY play_count ASC'
-        if (isSortByTime) sql += ' ORDER BY create_date ASC'
+        if (isSortByPopularity) sql += ' ORDER BY play_count DESC'
+        if (isSortByTime) sql += ' ORDER BY create_date DESC'
 
         const [rows] = await connection.query(sql)
 
