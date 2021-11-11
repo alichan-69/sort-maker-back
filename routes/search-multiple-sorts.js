@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
     const isSortByTime = postData['is_sort_by_time']
 
     // バリデーション
-    if (!func.isStrOutOfRange(partOfSortName, 1, 255))
+    if (!func.isStrOutOfRange(partOfSortName, 0, 255))
         res.send(func.apiResponse(1, 0, 'ソートの名前の文字数が範囲外です'))
 
     // データベースに接続
@@ -33,16 +33,22 @@ router.post('/', async (req, res) => {
     // ソートを検索する
     try {
         // ソートの検索
-        let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts`
+        let sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts WHERE name LIKE '%${partOfSortName}%'`
 
-        if (isSortByPopularity) sql += 'ORDER BY play_count ASC'
-        if (isSortByTime) sql += 'ORDER BY create_date ASC'
+        if (isSortByPopularity) sql += ' ORDER BY play_count ASC'
+        if (isSortByTime) sql += ' ORDER BY create_date ASC'
 
         const [rows] = await connection.query(sql)
 
         // ユーザー名を取ってくる
-        // sql = `SELECT name FROM users WHERE id = '${rows[0]['user_id']}' AND delete_flg = false`
-        // const [rowsOfUsers] = await connection.query(sql)
+        for (let i in rows) {
+            sql = `SELECT name FROM users WHERE id = '${rows[i]['user_id']}' AND delete_flg = false`
+
+            const [rowsOfUsers] = await connection.query(sql)
+
+            delete rows[i].user_id
+            rows[i].user_name = rowsOfUsers[0]['name']
+        }
 
         // 検索できたらdataに検索したデータを記載した正常なレスポンスをを返す
         res.send(
@@ -55,6 +61,7 @@ router.post('/', async (req, res) => {
             )
         )
     } catch (e) {
+        console.log(e.message)
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソートを検索できませんでした'))
     } finally {

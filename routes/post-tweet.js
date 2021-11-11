@@ -76,7 +76,7 @@ router.post('/', async function (req, res) {
         if (e) {
             res.send(func.apiResponse(1, 0, 'ツイッターの投稿に失敗しました'))
         } else {
-            res.send(func.apiResponse(1, 0, 'ツイッターの投稿に成功しました'))
+            res.send(func.apiResponse(0, 0, 'ツイッターの投稿に成功しました'))
         }
     })
 })

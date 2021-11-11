@@ -9,9 +9,10 @@ const registerSort = require('./register-sort')
 const registerUser = require('./register-user')
 const registerSortImage = require('./register-sort-image')
 const searchLike = require('./search-like')
-const searchMultipleSorts = require('./search-multiple-sort-items')
+const searchMultipleSorts = require('./search-multiple-sorts')
 const searchMultipleSortItems = require('./search-multiple-sort-items')
 const searchSort = require('./search-sort')
+const updatePlayCount = require('./update-play-count')
 
 // ルーティング処理
 router.use('/post-tweet', postTweet)
@@ -24,5 +25,6 @@ router.use('/search-like', searchLike)
 router.use('/search-multiple-sorts', searchMultipleSorts)
 router.use('/search-multiple-sort-items', searchMultipleSortItems)
 router.use('/search-sort', searchSort)
+router.use('/update-play-count', updatePlayCount)
 
 module.exports = router
