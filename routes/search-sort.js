@@ -44,6 +44,7 @@ router.post('/', async (req, res) => {
                     description: rows[0]['description'],
                     image: rows[0]['image'],
                     play_count: rows[0]['play_count'],
+                    user_id: rows[0]['user_id'],
                     user_name: rowsOfUsers[0]['name'],
                     create_date: rows[0]['create_date'],
                     update_date: rows[0]['update_date'],
