@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
         'sort_id',
         'name',
         'description',
-        'itemNames',
+        'item_names',
     ]
     if (!func.isExistKey(requiredKeys, postData))
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
@@ -22,9 +22,11 @@ router.post('/', async (req, res) => {
     const sortId = postData['sort_id']
     const name = postData['name']
     const description = postData['description']
-    const itemNames = postData['itemNames']
+    const itemNames = postData['item_names']
 
     // その他データベースに登録する値を変数に格納
+    const deleteFlg = false
+    const createDate = func.formatDate(new Date())
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
@@ -52,7 +54,7 @@ router.post('/', async (req, res) => {
             )
     }
 
-    if (itemNames.length < 1 || itemNames.length > 100)
+    if (itemNames.length < 2 || itemNames.length > 100)
         res.send(func.apiResponse(1, 0, 'ソートアイテムの名前の数が範囲外です'))
 
     // ユーザー認証を実行
@@ -69,25 +71,43 @@ router.post('/', async (req, res) => {
     // ソートタイトルとソートアイテムを編集する
     try {
         // ソートタイトルの編集
-        const sql = `UPDATE sorts SET name = '${name}', description = '${description}', update_date = '${updateDate}' WHERE id = ${sortId}`
+        let sql = `UPDATE sorts SET name = '${name}', description = '${description}', update_date = '${updateDate}' WHERE id = ${sortId}`
         await connection.query(sql)
 
         // ソートアイテムの編集
-        let sortItemIds = []
+        const newSortItemIds = []
+
+        // ソートアイテムのidを取ってくる
+        sql = `SELECT id FROM sort_items WHERE sort_id = ${sortId} AND delete_flg = false`
+        const [rows] = await connection.query(sql)
+        const oldSortItemIds = rows.map((el) => el.id)
 
         for (let i in itemNames) {
-            // ソートアイテムのidを取ってくる
-            let sql = `SELECT sort_items WHERE `
-            let sql = `UPDATE sort_items SET name = '${itemNames[i]}', update_date = '${updateDate}' WHERE id = ${sortId}`
-            const [rows] = await connection.query(sql)
-            sortItemIds.push(rows['insertId'])
+            if (oldSortItemIds[i]) {
+                sql = `UPDATE sort_items SET name = '${itemNames[i]}', update_date = '${updateDate}' WHERE id = ${oldSortItemIds[i]}`
+                await connection.query(sql)
+                newSortItemIds.push(oldSortItemIds[i])
+            } else {
+                // 登録されているソートアイテムの数が足りない時
+                sql = `INSERT INTO sort_items (name,sort_id,delete_flg,create_date,update_date) values ('${itemNames[i]}','${sortId}','${deleteFlg}','${createDate}','${updateDate}')`
+                const [rows] = await connection.query(sql)
+                newSortItemIds.push(rows['insertId'])
+            }
+        }
+
+        for (let i in oldSortItemIds) {
+            // 入力されたソートアイテムの数が足りない時
+            if (!itemNames[i]) {
+                sql = `UPDATE sort_items SET delete_flg = true WHERE id = ${oldSortItemIds[i]}`
+                await connection.query(sql)
+            }
         }
 
         // 編集できたらdataに編集したソートタイトルとソートアイテムのidを記載した正常なレスポンスをを返す
         res.send(
             func.apiResponse(
                 0,
-                { sort_id: sortId, sort_item_ids: sortItemIds },
+                { sort_id: sortId, sort_item_ids: newSortItemIds },
                 '成功'
             )
         )

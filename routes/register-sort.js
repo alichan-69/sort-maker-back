@@ -7,7 +7,7 @@ router.post('/', async (req, res) => {
     const postData = req.body
 
     // ポストされたデータの必須キーの存在チェック
-    const requiredKeys = ['user_id', 'name', 'description', 'itemNames']
+    const requiredKeys = ['user_id', 'name', 'description', 'item_names']
     if (!func.isExistKey(requiredKeys, postData))
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
 
@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
     const userId = postData['user_id']
     const name = postData['name']
     const description = postData['description']
-    const itemNames = postData['itemNames']
+    const itemNames = postData['item_names']
 
     // その他データベースに登録する値を変数に格納
     const playCount = 0
