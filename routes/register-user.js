@@ -8,8 +8,10 @@ router.post('/', async (req, res) => {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['id', 'name', 'access_token', 'secret']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const id = postData['id']
@@ -23,20 +25,30 @@ router.post('/', async (req, res) => {
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
-    if (!func.isStrOutOfRange(id, 1, 255))
+    if (!func.isStrOutOfRange(id, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
-    if (!func.isStrOutOfRange(name, 1, 255))
+        return
+    }
+    if (!func.isStrOutOfRange(name, 1, 255)) {
         res.send(func.apiResponse(1, 0, '名前の文字数が範囲外です'))
-    if (!func.isStrOutOfRange(accessToken, 1, 255))
+        return
+    }
+    if (!func.isStrOutOfRange(accessToken, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'accessTokenの文字数が範囲外です'))
-    if (!func.isStrOutOfRange(secret, 1, 255))
+        return
+    }
+    if (!func.isStrOutOfRange(secret, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'secretの文字数が範囲外です'))
+        return
+    }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // ユーザーを登録する
     try {
@@ -55,9 +67,11 @@ router.post('/', async (req, res) => {
 
         // 登録できたら正常なレスポンスをを返す
         res.send(func.apiResponse(0, 0, '成功'))
+        return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ユーザー登録できませんでした'))
+        return
     } finally {
         connection.end()
     }

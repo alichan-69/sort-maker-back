@@ -78,12 +78,39 @@ exports.authenticateUser = async (userId) => {
 }
 
 // ======================
+// ソート作成ユーザー認証
+// ======================
+exports.authenticateRegisterUser = async (userId, sortId) => {
+    // データベースに接続
+    const connection = await this.configureMysql()
+
+    if (!connection) return false
+
+    try {
+        // ソートidからソートを作成したユーザーidを取得し、そのユーザーidが
+        // ポストされたユーザーidと同値だったらtrueを返し、それ以外はfalseを返す
+        const sql = `SELECT * FROM sorts WHERE id = ${sortId}`
+        const [rows] = await connection.query(sql)
+
+        if (userId === rows[0]['user_id']) {
+            return true
+        } else {
+            return false
+        }
+    } catch (e) {
+        return false
+    } finally {
+        connection.end()
+    }
+}
+
+// ======================
 // 日付のフォーマット処理
 // ======================
 exports.formatDate = (date) => {
     const year = date.getFullYear()
-    const month = ('0' + date.getMonth()).slice(-2)
-    const day = ('0' + date.getDay()).slice(-2)
+    const month = ('0' + (date.getMonth() + 1)).slice(-2)
+    const day = ('0' + date.getDate()).slice(-2)
     const hour = ('0' + date.getHours()).slice(-2)
     const minute = ('0' + date.getMinutes()).slice(-2)
     const second = ('0' + date.getSeconds()).slice(-2)

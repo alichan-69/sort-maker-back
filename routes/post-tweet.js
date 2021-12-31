@@ -9,8 +9,10 @@ router.post('/', async function (req, res) {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['user_id', 'text']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const userId = postData['user_id']
@@ -21,22 +23,29 @@ router.post('/', async function (req, res) {
     let secret
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 255))
+    if (!func.isStrOutOfRange(userId, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
+        return
+    }
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 140))
+    if (!func.isStrOutOfRange(userId, 1, 140)) {
         res.send(func.apiResponse(1, 0, '投稿するテキストの文字数が範囲外です'))
+        return
+    }
 
     // ユーザー認証を実行
     if (!(await func.authenticateUser(userId))) {
         res.send(func.apiResponse(1, 0, 'ユーザー認証に失敗しました'))
+        return
     }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // acces_tokenとsecretを検索する
     try {
@@ -48,12 +57,13 @@ router.post('/', async function (req, res) {
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ユーザー検索できませんでした'))
+        return
     } finally {
         connection.end()
     }
 
     // access_tokenとsecretの複合化
-    const key = 'zEaM4cfD8jzSUdgbn3ZgxEe9rVZw'
+    const key = 'kkfn3CHY8ePrEV5QjGRze5CpxmaC'
 
     const decryptedAccessToken = crypto.AES.decrypt(accessToken, key).toString(
         crypto.enc.Utf8
@@ -66,8 +76,10 @@ router.post('/', async function (req, res) {
     const client = func.initializeTwitter(decryptedAccessToken, decryptedSecret)
 
     // 初期設定に失敗したらエラーレスポンスを返す
-    if (!client)
+    if (!client) {
         res.send(func.apiResponse(1, 0, 'ツイッターの投稿に失敗しました'))
+        return
+    }
 
     const params = { status: text }
 
@@ -75,8 +87,10 @@ router.post('/', async function (req, res) {
     client.post('statuses/update', params, (e) => {
         if (e) {
             res.send(func.apiResponse(1, 0, 'ツイッターの投稿に失敗しました'))
+            return
         } else {
             res.send(func.apiResponse(0, 0, 'ツイッターの投稿に成功しました'))
+            return
         }
     })
 })

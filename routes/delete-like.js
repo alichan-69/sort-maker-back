@@ -8,8 +8,10 @@ router.post('/', async (req, res) => {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['user_id', 'sort_id']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const userId = postData['user_id']
@@ -20,21 +22,28 @@ router.post('/', async (req, res) => {
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 255))
+    if (!func.isStrOutOfRange(userId, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'ユーザーidの文字数が範囲外です'))
-    if (!func.isStrOutOfRange(String(sortId), 1, 11))
+        return
+    }
+    if (!func.isStrOutOfRange(String(sortId), 1, 11)) {
         res.send(func.apiResponse(1, 0, 'ソートidの桁数が範囲外です'))
+        return
+    }
 
     // ユーザー認証を実行
     if (!(await func.authenticateUser(userId))) {
         res.send(func.apiResponse(1, 0, 'ユーザー認証に失敗しました'))
+        return
     }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // お気に入りを削除する
     try {
@@ -43,9 +52,11 @@ router.post('/', async (req, res) => {
 
         // 登録できたら正常なレスポンスをを返す
         res.send(func.apiResponse(0, 0, '成功'))
+        return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'お気に入り削除できませんでした'))
+        return
     } finally {
         connection.end()
     }

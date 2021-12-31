@@ -8,8 +8,10 @@ router.post('/', async (req, res) => {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['user_id']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const userId = postData['user_id']
@@ -38,7 +40,7 @@ router.post('/', async (req, res) => {
         // お気に入りのsort_idをわたしてソートのデータを取ってくる
         let rowsOfSorts = []
 
-        if (rows) {
+        if (rows.length !== 0) {
             sql = `SELECT id, name, description, image, play_count ,user_id, create_date, update_date FROM sorts WHERE delete_flg = false`
 
             for (let i in rows) {
@@ -51,16 +53,16 @@ router.post('/', async (req, res) => {
             }
 
             ;[rowsOfSorts] = await connection.query(sql)
-        }
 
-        // ユーザー名を取ってくる
-        for (let i in rowsOfSorts) {
-            sql = `SELECT name FROM users WHERE id = '${rowsOfSorts[i]['user_id']}' AND delete_flg = false`
+            // ユーザー名を取ってくる
+            for (let i in rowsOfSorts) {
+                sql = `SELECT name FROM users WHERE id = '${rowsOfSorts[i]['user_id']}' AND delete_flg = false`
 
-            const [rowsOfUsers] = await connection.query(sql)
+                const [rowsOfUsers] = await connection.query(sql)
 
-            delete rowsOfSorts[i]['user_id']
-            rowsOfSorts[i]['user_name'] = rowsOfUsers[0]['name']
+                delete rowsOfSorts[i]['user_id']
+                rowsOfSorts[i]['user_name'] = rowsOfUsers[0]['name']
+            }
         }
 
         // 検索できたらdataに検索したデータを記載した正常なレスポンスをを返す

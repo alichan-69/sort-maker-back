@@ -8,8 +8,10 @@ router.post('/', async (req, res) => {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['user_id', 'name', 'description', 'item_names']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const userId = postData['user_id']
@@ -24,19 +26,25 @@ router.post('/', async (req, res) => {
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 255))
+    if (!func.isStrOutOfRange(userId, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
-    if (!func.isStrOutOfRange(name, 1, 255))
+        return
+    }
+    if (!func.isStrOutOfRange(name, 1, 255)) {
         res.send(
             func.apiResponse(1, 0, 'ソートタイトルの名前の文字数が範囲外です')
         )
-    if (!func.isStrOutOfRange(description, 1, 255))
+        return
+    }
+    if (!func.isStrOutOfRange(description, 1, 255)) {
         res.send(
             func.apiResponse(1, 0, 'ソートタイトルの説明の文字数が範囲外です')
         )
+        return
+    }
 
     for (let i in itemNames) {
-        if (!func.isStrOutOfRange(itemNames[i], 1, 255))
+        if (!func.isStrOutOfRange(itemNames[i], 1, 255)) {
             res.send(
                 func.apiResponse(
                     1,
@@ -44,21 +52,28 @@ router.post('/', async (req, res) => {
                     'ソートアイテムの名前の文字数が範囲外です'
                 )
             )
+            return
+        }
     }
 
-    if (itemNames.length < 1 || itemNames.length > 100)
+    if (itemNames.length < 1 || itemNames.length > 100) {
         res.send(func.apiResponse(1, 0, 'ソートアイテムの名前の数が範囲外です'))
+        return
+    }
 
     // ユーザー認証を実行
     if (!(await func.authenticateUser(userId))) {
         res.send(func.apiResponse(1, 0, 'ユーザー認証に失敗しました'))
+        return
     }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // ソートタイトルとソートアイテムを登録する
     try {
@@ -84,9 +99,11 @@ router.post('/', async (req, res) => {
                 '成功'
             )
         )
+        return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソートを登録できませんでした'))
+        return
     } finally {
         connection.end()
     }

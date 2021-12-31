@@ -18,8 +18,7 @@ router.post('/', async (req, res) => {
     const sortId = postData['sort_id']
 
     // その他データベースに登録する値を変数に格納
-    const deleteFlg = false
-    const createDate = func.formatDate(new Date())
+    const deleteFlg = true
     const updateDate = func.formatDate(new Date())
 
     // バリデーション
@@ -33,7 +32,7 @@ router.post('/', async (req, res) => {
     }
 
     // ユーザー認証を実行
-    if (!(await func.authenticateUser(userId))) {
+    if (!(await func.authenticateRegisterUser(userId, sortId))) {
         res.send(func.apiResponse(1, 0, 'ユーザー認証に失敗しました'))
         return
     }
@@ -46,37 +45,26 @@ router.post('/', async (req, res) => {
         return
     }
 
-    // お気に入りを登録する
+    // ソート、ソートアイテム、お気に入りを削除する
     try {
-        // すでにお気に入りが登録されているかどうか確かめる
-        let sql = `SELECT COUNT(*) AS count FROM likes WHERE user_id = '${userId}' AND sort_id = ${sortId} AND delete_flg = false`
-        const [rows] = await connection.query(sql)
-        if (rows[0]['count']) {
-            // すでに登録されていたら正常なレスポンスをを返す
-            res.send(func.apiResponse(0, 0, '成功'))
-            return
-        }
+        // ソートを削除する
+        let sql = `UPDATE sorts SET delete_flg = ${deleteFlg}, update_date = '${updateDate}' WHERE id = ${sortId} AND delete_flg = false`
+        await connection.query(sql)
 
-        // すでにお気に入りが存在しているか確かめる
-        sql = `SELECT COUNT(*) AS count FROM likes WHERE user_id = '${userId}' AND sort_id = ${sortId} AND delete_flg = true`
-        const [rowsOfLikes] = await connection.query(sql)
+        // ソートアイテムを削除する
+        sql = `UPDATE sort_items SET delete_flg = ${deleteFlg}, update_date = '${updateDate}' WHERE sort_id = ${sortId} AND delete_flg = false`
+        await connection.query(sql)
 
-        // 存在してたらdelete_flgをfalseに変え、存在してなかったらレコードを増やす
-        if (rowsOfLikes[0]['count']) {
-            sql = `UPDATE likes SET delete_flg = ${deleteFlg}, update_date = '${updateDate}' WHERE user_id = '${userId}' AND sort_id = ${sortId} AND delete_flg = true`
-            await connection.query(sql)
-        } else {
-            // お気に入りの登録
-            sql = `INSERT INTO likes (sort_id,user_id,delete_flg,create_date,update_date) values (${sortId},'${userId}',${deleteFlg},'${createDate}','${updateDate}')`
-            await connection.query(sql)
-        }
+        // お気に入りを削除する
+        sql = `UPDATE likes SET delete_flg = ${deleteFlg}, update_date = '${updateDate}' WHERE sort_id = ${sortId} AND delete_flg = false`
+        await connection.query(sql)
 
-        // 登録できたら正常なレスポンスをを返す
+        // 削除できたら正常なレスポンスをを返す
         res.send(func.apiResponse(0, 0, '成功'))
         return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
-        res.send(func.apiResponse(1, 0, 'お気に入り登録できませんでした'))
+        res.send(func.apiResponse(1, 0, 'ソートを削除できませんでした'))
         return
     } finally {
         connection.end()

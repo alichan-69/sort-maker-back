@@ -14,8 +14,10 @@ router.post('/', async (req, res) => {
         'sort_id',
         'sort_item_ids',
     ]
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const userId = postData['user_id']
@@ -25,8 +27,10 @@ router.post('/', async (req, res) => {
     const sortItemIds = postData['sort_item_ids']
 
     // バリデーション
-    if (!func.isStrOutOfRange(userId, 1, 255))
+    if (!func.isStrOutOfRange(userId, 1, 255)) {
         res.send(func.apiResponse(1, 0, 'ユーザーIDの文字数が範囲外です'))
+        return
+    }
 
     if (!func.isStrOutOfRange(image, 0, 2083)) {
         res.send(
@@ -36,10 +40,11 @@ router.post('/', async (req, res) => {
                 'ソートタイトルの画像のURLの文字数が範囲外です'
             )
         )
+        return
     }
 
     for (let i in itemImages) {
-        if (!func.isStrOutOfRange(itemImages[i], 0, 2083))
+        if (!func.isStrOutOfRange(itemImages[i], 0, 2083)) {
             res.send(
                 func.apiResponse(
                     1,
@@ -47,34 +52,47 @@ router.post('/', async (req, res) => {
                     'ソートアイテムの画像のURLの文字数が範囲外です'
                 )
             )
+            return
+        }
     }
 
-    if (!func.isStrOutOfRange(String(sortId), 1, 11))
+    if (!func.isStrOutOfRange(String(sortId), 1, 11)) {
         res.send(func.apiResponse(1, 0, 'ソートidの桁数が範囲外です'))
+        return
+    }
 
     for (let i in sortItemIds) {
-        if (!func.isStrOutOfRange(String(sortItemIds[i]), 1, 11))
+        if (!func.isStrOutOfRange(String(sortItemIds[i]), 1, 11)) {
             res.send(
                 func.apiResponse(1, 0, 'ソートアイテムidの桁数が範囲外です')
             )
+            return
+        }
     }
 
-    if (itemImages.length < 1 || itemImages.length > 100)
+    if (itemImages.length < 1 || itemImages.length > 100) {
         res.send(func.apiResponse(1, 0, 'ソートアイテムの画像の数が範囲外です'))
+        return
+    }
 
-    if (sortItemIds.length < 1 || sortItemIds.length > 100)
+    if (sortItemIds.length < 1 || sortItemIds.length > 100) {
         res.send(func.apiResponse(1, 0, 'ソートアイテムidの数が範囲外です'))
+        return
+    }
 
     // ユーザー認証を実行
     if (!(await func.authenticateUser(userId))) {
         res.send(func.apiResponse(1, 0, 'ユーザー認証に失敗しました'))
+        return
     }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // ソートタイトルの画像とソートアイテムの画像を登録する
     try {
@@ -90,9 +108,11 @@ router.post('/', async (req, res) => {
 
         // 登録できたら正常なレスポンスをを返す
         res.send(func.apiResponse(0, 0, '成功'))
+        return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソート画像を登録できませんでした'))
+        return
     } finally {
         connection.end()
     }

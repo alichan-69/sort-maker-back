@@ -8,21 +8,27 @@ router.post('/', async (req, res) => {
 
     // ポストされたデータの必須キーの存在チェック
     const requiredKeys = ['id']
-    if (!func.isExistKey(requiredKeys, postData))
+    if (!func.isExistKey(requiredKeys, postData)) {
         res.send(func.apiResponse(1, 0, 'ポストデータのキーが不足しています'))
+        return
+    }
 
     // ポストされたデータをそれぞれ変数に格納
     const id = postData['id']
 
     // バリデーション
-    if (!func.isStrOutOfRange(String(id), 1, 11))
+    if (!func.isStrOutOfRange(String(id), 1, 11)) {
         res.send(func.apiResponse(1, 0, 'ソートidの桁数が範囲外です'))
+        return
+    }
 
     // データベースに接続
     const connection = await func.configureMysql()
 
-    if (!connection)
+    if (!connection) {
         res.send(func.apiResponse(1, 0, 'データベースに接続できませんでした'))
+        return
+    }
 
     // ソートアイテムを検索する
     try {
@@ -40,9 +46,11 @@ router.post('/', async (req, res) => {
                 '成功'
             )
         )
+        return
     } catch (e) {
         // エラーがひっかかったらエラーレスポンスを返す
         res.send(func.apiResponse(1, 0, 'ソートを検索できませんでした'))
+        return
     } finally {
         connection.end()
     }
