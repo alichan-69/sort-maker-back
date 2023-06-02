@@ -1,0 +1,38 @@
+const express = require('express')
+const router = express.Router()
+
+// ルーティング先に指定するモジュールの読み込み
+const deleteLike = require('./delete-like')
+const deleteSort = require('./delete-sort')
+const editSort = require('./edit-sort')
+const postTweet = require('./post-tweet')
+const registerLike = require('./register-like')
+const registerSort = require('./register-sort')
+const registerUser = require('./register-user')
+const registerSortImage = require('./register-sort-image')
+const searchLike = require('./search-like')
+const searchMultipleLikeSorts = require('./search-multiple-like-sorts')
+const searchMultipleRegisterSorts = require('./search-multiple-register-sorts')
+const searchMultipleSortItems = require('./search-multiple-sort-items')
+const searchMultipleSorts = require('./search-multiple-sorts')
+const searchSort = require('./search-sort')
+const updatePlayCount = require('./update-play-count')
+
+// ルーティング処理
+router.use('/delete-like', deleteLike)
+router.use('/delete-sort', deleteSort)
+router.use('/edit-sort', editSort)
+router.use('/post-tweet', postTweet)
+router.use('/register-like', registerLike)
+router.use('/register-sort', registerSort)
+router.use('/register-user', registerUser)
+router.use('/register-sort-image', registerSortImage)
+router.use('/search-like', searchLike)
+router.use('/search-multiple-like-sorts', searchMultipleLikeSorts)
+router.use('/search-multiple-register-sorts', searchMultipleRegisterSorts)
+router.use('/search-multiple-sort-items', searchMultipleSortItems)
+router.use('/search-multiple-sorts', searchMultipleSorts)
+router.use('/search-sort', searchSort)
+router.use('/update-play-count', updatePlayCount)
+
+module.exports = router
